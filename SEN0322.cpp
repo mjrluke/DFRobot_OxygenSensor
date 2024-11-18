@@ -18,7 +18,7 @@ void Sen0322Sensor::setup() {
 void Sen0322Sensor::update() { this->read_data_(); }
 
 void Sen0322Sensor::dump_config() {
-  ESP_LOGCONFIG(TAG, "DF Robot Ozone Sensor sen0322:");
+  ESP_LOGCONFIG(TAG, "DF Robot Oxygen Sensor sen0322:");
   LOG_I2C_DEVICE(this);
   if (this->is_failed()) {
     ESP_LOGE(TAG, "Communication with sen0322 failed!");
