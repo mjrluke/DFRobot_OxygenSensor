@@ -1,8 +1,5 @@
 #pragma once
 
-#include "esphome/components/sensor/sensor.h"
-#include "esphome/components/i2c/i2c.h"
-
 // ref:
 // https://github.com/DFRobot/DFRobot_OxygenSensor
 
