@@ -1,69 +1,35 @@
-/*!
- * @file DFRobot_OxygenSensor.h
- * @brief Define basic struct of DFRobot_OxygenSensor class
- * @details This is an electrochemical oxygen sensor, I2C address can be changed by a dip switch, and the oxygen concentration can be obtained through I2C.
- * @copyright	Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
- * @license The MIT License (MIT)
- * @author ZhixinLiu(zhixin.liu@dfrobot.com)
- * @version V1.0.1
- * @date 2023-08-02
- * @url https://github.com/DFRobot/DFRobot_OxygenSensor
- */
-#ifndef __DFRobot_OxygenSensor_H__
-#define __DFRobot_OxygenSensor_H__
+#pragma once
 
-#include <Arduino.h>
-#include <Wire.h>
+#include "esphome/core/component.h"
+#include "esphome/components/sensor/sensor.h"
+#include "esphome/components/i2c/i2c.h"
 
-#define ADDRESS_0   0x70
-#define ADDRESS_1   0x71
-#define ADDRESS_2   0x72
-#define ADDRESS_3   0x73  ///< iic slave Address select
-#define OCOUNT      100   ///< oxygen Count Value
-#define OXYGEN_DATA_REGISTER 0x03   ///< register for oxygen data
-#define USER_SET_REGISTER    0x08   ///< register for users to configure key value manually
-#define AUTUAL_SET_REGISTER  0x09   ///< register that automatically configure key value
-#define GET_KEY_REGISTER     0x0A   ///< register for obtaining key value
+// ref:
+// https://github.com/DFRobot/DFRobot_OxygenSensor
 
-class DFRobot_OxygenSensor
-{
-public:
-  DFRobot_OxygenSensor(TwoWire *pWire = &Wire);
-  ~DFRobot_OxygenSensor();
-  /**
-   * @fn begin
-   * @brief Initialize i2c
-   * @param addr i2c device address
-   * @n     Default to use i2c address of 0x70 without passing parameters
-   * @return None
-   */
-  bool begin(uint8_t addr = ADDRESS_2);
+namespace esphome {
+namespace sen0322_sensor {
+// Sensor Mode
+// While passive is supposedly supported, it does not appear to work reliably.
+static const uint8_t SENSOR_MODE_REGISTER = 0x03;
+static const uint8_t SENSOR_MODE_AUTO = 0x00;
+static const uint8_t SENSOR_MODE_PASSIVE = 0x01;
+static const uint8_t SET_REGISTER = 0x04;
 
-  /**
-   * @fn calibrate
-   * @brief Calibrate oxygen sensor
-   * @param vol oxygen concentration unit vol
-   * @param mv calibrated voltage unit mv
-   * @return None
-   */
-  void calibrate(float vol, float mv = 0);
+// Each register is 2 wide, so 0x07-0x08 for passive, or 0x09-0x0A for auto
+// First register is high bits, next low.
+static const uint8_t SENSOR_PASS_READ_REG = 0x07;
+static const uint8_t SENSOR_AUTO_READ_REG = 0x09;
 
-  /**
-   * @fn getOxygenData
-   * @brief Get oxygen concentration
-   * @param collectNum The number of data to be smoothed
-   * @n     For example, upload 20 and take the average value of the 20 data, then return the concentration data
-   * @return Oxygen concentration, unit
-   */  
-  float getOxygenData(uint8_t collectNum);
-  
-private:
-  void readFlash();
-  void i2cWrite(uint8_t reg, uint8_t data);
-  uint8_t  _addr;                               
-  float _Key = 0.0;                          ///< oxygen key value
-  float oxygenData[OCOUNT] = {0.00};
-  float getAverageNum(float bArray[], uint8_t len);
-  TwoWire *_pWire;
+class Sen0322Sensor : public sensor::Sensor, public PollingComponent, public i2c::I2CDevice {
+ public:
+  void update() override;
+  void dump_config() override;
+  void setup() override;
+
+ protected:
+  void read_data_();
 };
-#endif
+
+}  // namespace sen0322_sensor
+}  // namespace esphome
